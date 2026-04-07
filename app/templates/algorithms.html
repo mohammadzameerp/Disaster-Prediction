@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 mt-10">
+  <div class="text-center gsap-animate-in">
+    <h2 class="text-4xl font-bold text-white mb-3">Train <span class="text-gradient">Models</span></h2>
+    <p class="text-xl text-gray-400 font-light">Evaluate hybrid and classical models on your current dataset.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+    <!-- Neural-XGBoost Hybrid -->
+    <div class="glass-card p-6 gsap-animate-in flex flex-col h-full border-t border-pink-500/30">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="material-symbols-outlined text-pink-400 text-3xl">psychology</span>
+        <h5 class="text-xl font-bold text-white">Neural-XGBoost</h5>
+      </div>
+      <p class="text-sm text-gray-400 mb-6 flex-grow">Our proprietary hybrid model combining deep neural embeddings with XGBoost ensemble logic.</p>
+      <button class="w-full py-2 bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded-lg shadow transition-all flex justify-center items-center gap-2 mb-4" data-algo="hybrid">
+        <span class="material-symbols-outlined text-sm">model_training</span> Train Hybrid
+      </button>
+      <div class="bg-dark-900/60 rounded-lg min-h-[100px] border border-white/5 p-3 overflow-hidden text-sm" id="out-hybrid"></div>
+    </div>
+
+    <!-- XGBoost -->
+    <div class="glass-card p-6 gsap-animate-in flex flex-col h-full border-t border-blue-500/30">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="material-symbols-outlined text-blue-400 text-3xl">forest</span>
+        <h5 class="text-xl font-bold text-white">XGBoost</h5>
+      </div>
+      <p class="text-sm text-gray-400 mb-6 flex-grow">A scalable and highly accurate implementation of gradient boosted decision trees.</p>
+      <button class="w-full py-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-semibold rounded-lg transition-all flex justify-center items-center gap-2 mb-4" data-algo="xgboost">
+        <span class="material-symbols-outlined text-sm">model_training</span> Train XGBoost
+      </button>
+      <div class="bg-dark-900/60 rounded-lg min-h-[100px] border border-white/5 p-3 overflow-hidden text-sm" id="out-xgboost"></div>
+    </div>
+
+    <!-- Random Forest -->
+    <div class="glass-card p-6 gsap-animate-in flex flex-col h-full border-t border-green-500/30">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="material-symbols-outlined text-green-400 text-3xl">park</span>
+        <h5 class="text-xl font-bold text-white">Random Forest</h5>
+      </div>
+      <p class="text-sm text-gray-400 mb-6 flex-grow">An ensemble learning method that constructs a multitude of decision trees.</p>
+      <button class="w-full py-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-semibold rounded-lg transition-all flex justify-center items-center gap-2 mb-4" data-algo="random_forest">
+        <span class="material-symbols-outlined text-sm">model_training</span> Train Random Forest
+      </button>
+      <div class="bg-dark-900/60 rounded-lg min-h-[100px] border border-white/5 p-3 overflow-hidden text-sm" id="out-random_forest"></div>
+    </div>
+
+    <!-- SVM -->
+    <div class="glass-card p-6 gsap-animate-in flex flex-col h-full border-t border-yellow-500/30">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="material-symbols-outlined text-yellow-500 text-3xl">multiline_chart</span>
+        <h5 class="text-xl font-bold text-white">SVM</h5>
+      </div>
+      <p class="text-sm text-gray-400 mb-6 flex-grow">Support Vector Machines are effective in high dimensional spaces.</p>
+      <button class="w-full py-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-semibold rounded-lg transition-all flex justify-center items-center gap-2 mb-4" data-algo="svm">
+        <span class="material-symbols-outlined text-sm">model_training</span> Train SVM
+      </button>
+      <div class="bg-dark-900/60 rounded-lg min-h-[100px] border border-white/5 p-3 overflow-hidden text-sm" id="out-svm"></div>
+    </div>
+
+    <!-- Logistic Regression -->
+    <div class="glass-card p-6 gsap-animate-in flex flex-col h-full border-t border-purple-500/30">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="material-symbols-outlined text-purple-400 text-3xl">functions</span>
+        <h5 class="text-xl font-bold text-white">Logistic Regression</h5>
+      </div>
+      <p class="text-sm text-gray-400 mb-6 flex-grow">A simple, yet highly effective statistical model for classification.</p>
+      <button class="w-full py-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-semibold rounded-lg transition-all flex justify-center items-center gap-2 mb-4" data-algo="logistic_regression">
+        <span class="material-symbols-outlined text-sm">model_training</span> Train Logistic Reg
+      </button>
+      <div class="bg-dark-900/60 rounded-lg min-h-[100px] border border-white/5 p-3 overflow-hidden text-sm" id="out-logistic_regression"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('button[data-algo]').forEach(btn => {
+  btn.onclick = async () => {
+    const algo = btn.getAttribute('data-algo');
+    const out = document.getElementById('out-'+algo);
+    out.innerHTML = `<div class="flex items-center gap-2 text-pink-400"><span class="material-symbols-outlined animate-spin text-sm">sync</span> Training ${algo}...</div>`;
+    try {
+      const r = await fetch('/train/'+algo, {method:'POST'});
+      const j = await r.json();
+      if (!r.ok || j.error) {
+        const msg = j && j.error ? j.error : 'training_failed';
+        out.innerHTML = `<span class="text-red-400 flex items-center gap-1"><span class="material-symbols-outlined text-sm">error</span> Error: ${msg}</span>`;
+        return;
+      }
+      const metrics = j.metrics || j;
+      const acc = (metrics.accuracy * 100).toFixed(2);
+      const f1 = (metrics.f1 * 100).toFixed(2);
+      const auc = metrics.roc_auc != null ? (metrics.roc_auc).toFixed(3) : 'N/A';
+      const cm = metrics.confusion_matrix || [];
+
+      let cmHtml = '';
+      if (Array.isArray(cm) && cm.length) {
+        cmHtml += '<div class="mt-3 max-h-32 overflow-auto custom-scrollbar"><table class="w-full text-left text-xstext-gray-300"><tbody>';
+        cm.forEach(row => {
+          cmHtml += '<tr class="border-b border-white/5">';
+          row.forEach(v => {
+            cmHtml += `<td class="px-2 py-1">${v}</td>`;
+          });
+          cmHtml += '</tr>';
+        });
+        cmHtml += '</tbody></table></div>';
+      }
+
+      out.innerHTML = `
+        <div class="flex flex-col gap-1 text-gray-300">
+          <div class="flex justify-between items-center bg-white/5 p-1 px-2 rounded">
+            <span>Accuracy:</span><span class="font-bold text-white">${acc}%</span>
+          </div>
+          <div class="flex justify-between items-center bg-white/5 p-1 px-2 rounded">
+            <span>F1 Score:</span><span class="font-bold text-white">${f1}%</span>
+          </div>
+          <div class="flex justify-between items-center bg-white/5 p-1 px-2 rounded">
+            <span>ROC AUC:</span><span class="font-bold text-white">${auc}</span>
+          </div>
+        </div>
+        ${cmHtml}
+      `;
+    } catch (e) {
+      out.innerHTML = `<span class="text-red-400 flex items-center gap-1"><span class="material-symbols-outlined text-sm">error</span> Error: ${e.message}</span>`;
+    }
+  };
+});
+</script>
+{% endblock %}

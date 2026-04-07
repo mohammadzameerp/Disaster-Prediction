@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#0b0b0f"/>
+  <path d="M0 500 C200 460 400 540 600 500 C800 460 1000 540 1200 500 L1200 600 L0 600 Z" fill="#2a7bd9" opacity="0.8"/>
+  <path d="M0 520 C220 480 420 560 620 520 C820 480 1020 560 1200 520 L1200 600 L0 600 Z" fill="#1f5fb0" opacity="0.7"/>
+  <text x="40" y="80" font-size="56" font-family="Poppins" fill="#78dcff">Flood Risk</text>
+</svg>

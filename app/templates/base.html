@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en" class="antialiased font-poppins">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Neural-XGBoost Disaster Prediction</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <!-- Material Symbols / Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  
+  <!-- GSAP for Animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  
+  <!-- Custom configurations and glassmorphism styles -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            poppins: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            pink: {
+              400: '#ff6ec7',
+              500: '#f04ab1',
+              600: '#d92c97',
+            },
+            dark: {
+              800: '#1a1a2e',
+              900: '#141424',
+              950: '#0c0c16',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0c0c16;
+      color: #e2e8f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: radial-gradient(circle at 15% 50%, rgba(255, 110, 199, 0.15), transparent 25%),
+                        radial-gradient(circle at 85% 30%, rgba(138, 43, 226, 0.15), transparent 25%);
+    }
+    .glass-nav {
+      background: rgba(20, 20, 36, 0.7);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+    .text-gradient {
+      background: linear-gradient(to right, #ff6ec7, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255,110,199,0.3); border-radius: 4px; }
+    .material-symbols-outlined { vertical-align: middle; }
+  </style>
+</head>
+<body class="custom-scrollbar pt-20"> <!-- pt-20 to offset the fixed navbar -->
+
+  <!-- Fixed Transparent & Blurred Navbar -->
+  <nav class="fixed top-0 w-full z-50 glass-nav shadow-lg transition-all transform-gpu">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center">
+          <a href="/" class="flex items-center gap-2 text-xl font-bold text-white hover:text-pink-400 transition-colors">
+            <span class="material-symbols-outlined text-pink-400">flood</span>
+            <span class="text-gradient hover:opacity-80 transition-opacity">DisasterAI</span>
+          </a>
+        </div>
+        <div class="hidden md:block">
+          <div class="ml-10 flex items-baseline space-x-2">
+            <a href="/" class="text-gray-300 hover:text-white hover:bg-white/5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">Home</a>
+            <a href="/about" class="text-gray-300 hover:text-white hover:bg-white/5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">About</a>
+            <a href="/upload" class="text-gray-300 hover:text-white hover:bg-white/5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">Upload Data</a>
+            <a href="/algorithms" class="text-gray-300 hover:text-white hover:bg-white/5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">Train Models</a>
+            <a href="/predict" class="text-gray-300 hover:text-white hover:bg-white/5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">Predict</a>
+            <a href="/flood" class="text-gray-300 hover:text-white hover:bg-white/5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">Flood Analytics</a>
+            <a href="/logout" class="text-gray-300 hover:text-red-400 hover:bg-white/5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">Logout</a>
+          </div>
+        </div>
+        <!-- Mobile menu button -->
+        <div class="-mr-2 flex md:hidden">
+          <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-white/10 focus:outline-none">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="md:hidden hidden bg-dark-900 border-t border-white/5" id="mobile-menu">
+      <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <a href="/" class="text-gray-300 hover:text-white hover:bg-white/5 block px-3 py-2 rounded-md text-base font-medium">Home</a>
+        <a href="/about" class="text-gray-300 hover:text-white hover:bg-white/5 block px-3 py-2 rounded-md text-base font-medium">About</a>
+        <a href="/upload" class="text-gray-300 hover:text-white hover:bg-white/5 block px-3 py-2 rounded-md text-base font-medium">Upload Data</a>
+        <a href="/algorithms" class="text-gray-300 hover:text-white hover:bg-white/5 block px-3 py-2 rounded-md text-base font-medium">Train Models</a>
+        <a href="/predict" class="text-gray-300 hover:text-white hover:bg-white/5 block px-3 py-2 rounded-md text-base font-medium">Predict</a>
+        <a href="/flood" class="text-gray-300 hover:text-white hover:bg-white/5 block px-3 py-2 rounded-md text-base font-medium">Flood Analytics</a>
+        <a href="/logout" class="text-gray-300 hover:text-red-400 hover:bg-white/5 block px-3 py-2 rounded-md text-base font-medium">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    {% block content %}{% endblock %}
+  </main>
+  
+  <script>
+    // Global GSAP utility for page load animations
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof gsap !== 'undefined') {
+        gsap.from(".glass-card, .gsap-animate-in", {
+          y: 30,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: "power3.out"
+        });
+      }
+    });
+  </script>
+</body>
+</html>

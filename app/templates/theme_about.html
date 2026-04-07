@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-card">
+  <h2 class="heading-pink">Upload About Page Images</h2>
+  <form method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label>Choose Image</label>
+      <input type="file" name="image" class="form-control" accept="image/*" />
+    </div>
+    <button class="btn btn-pink" type="submit">Upload</button>
+  </form>
+  <div class="mt-3">
+    {% if images %}
+      <h5>Current Images</h5>
+      {% for img in images %}
+        <img src="{{ img }}" class="img-fluid mb-2" style="border-radius:12px;"/>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

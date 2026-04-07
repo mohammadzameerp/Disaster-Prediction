@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto mt-10">
+  <div class="text-center gsap-animate-in mb-10">
+    <h2 class="text-4xl font-bold text-white mb-2">Model <span class="text-gradient">Accuracies</span></h2>
+    <p class="text-gray-400 font-light">Performance comparison of all models trained in the current session.</p>
+  </div>
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% set algos = { 'hybrid':'Neural-XGBoost', 'xgboost':'XGBoost', 'random_forest':'Random Forest', 'svm':'SVM', 'logistic_regression':'Logistic Regression' } %}
+    {% for key, name in algos.items() %}
+    <div class="glass-card p-6 gsap-animate-in flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-4">
+        <h5 class="text-lg font-bold text-white">{{ name }}</h5>
+        {% if name == 'Neural-XGBoost' %}
+          <span class="material-symbols-outlined text-pink-400">psychology</span>
+        {% else %}
+          <span class="material-symbols-outlined text-blue-400">model_training</span>
+        {% endif %}
+      </div>
+      
+      {% if metrics_map and metrics_map.get(key) %}
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-sm text-gray-400 mb-1">
+              <span>Accuracy</span>
+              <span class="text-white font-medium">{{ '%.2f'|format(metrics_map[key].accuracy*100) }}%</span>
+            </div>
+            <div class="w-full bg-dark-900 rounded-full h-2">
+              <div class="bg-pink-500 h-2 rounded-full" style="width: {{ metrics_map[key].accuracy*100 }}%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm text-gray-400 mb-1">
+              <span>F1 Score</span>
+              <span class="text-white font-medium">{{ '%.2f'|format(metrics_map[key].f1*100) }}%</span>
+            </div>
+            <div class="w-full bg-dark-900 rounded-full h-2">
+              <div class="bg-blue-400 h-2 rounded-full" style="width: {{ metrics_map[key].f1*100 }}%"></div>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="flex-grow flex items-center justify-center p-6 bg-dark-900/40 rounded border border-white/5 border-dashed">
+          <p class="text-sm text-gray-500 flex flex-col items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-2xl">hourglass_empty</span>
+            Not Trained Yet
+          </p>
+        </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

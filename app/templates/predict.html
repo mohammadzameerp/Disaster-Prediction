@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 mt-10">
+  <div class="text-center gsap-animate-in">
+    <h2 class="text-4xl font-bold text-white mb-2">Disaster <span class="text-gradient">Prediction</span></h2>
+    <p class="text-gray-400 font-light">Input scenario details to predict disaster type, severity, and risk score.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Input Form -->
+    <div class="glass-card p-8 gsap-animate-in border-t border-pink-500/30">
+      <h3 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
+        <span class="material-symbols-outlined text-pink-400">tune</span> Scenario Details
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div><label class="block text-sm text-gray-400 mb-1">Country</label><input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500" id="country" placeholder="India"/></div>
+        <div><label class="block text-sm text-gray-400 mb-1">Region / Subregion</label><input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500" id="subregion" placeholder="South Asia"/></div>
+        <div><label class="block text-sm text-gray-400 mb-1">Year</label><input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-pink-500" id="year" type="number" value="2020"/></div>
+        <div><label class="block text-sm text-gray-400 mb-1">Month</label><input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-pink-500" id="month" type="number" value="6" min="1" max="12"/></div>
+        <div><label class="block text-sm text-gray-400 mb-1">Total Affected</label><input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500" id="total_affected" type="number" min="0" placeholder="e.g. 10000"/></div>
+        <div><label class="block text-sm text-gray-400 mb-1">Total Deaths</label><input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500" id="total_deaths" type="number" min="0" placeholder="e.g. 50"/></div>
+        <div><label class="block text-sm text-gray-400 mb-1">Total Injured</label><input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500" id="total_injured" type="number" min="0" placeholder="e.g. 200"/></div>
+        <div><label class="block text-sm text-gray-400 mb-1">Total Homeless</label><input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500" id="total_homeless" type="number" min="0" placeholder="e.g. 500"/></div>
+        <div class="md:col-span-2"><label class="block text-sm text-gray-400 mb-1">Economic Damage (USD)</label><input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500" id="damage_usd" type="number" min="0" placeholder="e.g. 1000000"/></div>
+      </div>
+      <button id="predictBtn" class="w-full mt-6 py-3 bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded-lg shadow-lg flex justify-center items-center gap-2 transition-all">
+        <span class="material-symbols-outlined">query_stats</span> Analyze & Predict
+      </button>
+    </div>
+
+    <!-- Output Form -->
+    <div class="glass-card p-8 gsap-animate-in border-t border-blue-500/30 flex flex-col">
+      <h3 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
+        <span class="material-symbols-outlined text-blue-400">insights</span> Prediction Output
+      </h3>
+      <div id="predictionSummary" class="flex-grow flex flex-col justify-center">
+        <p id="predictionSummaryText" class="text-gray-400 text-center">Run a prediction to see disaster type, severity level, and risk insights here.</p>
+        <div class="w-full mt-6 h-64 relative">
+          <canvas id="probChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const predictBtn = document.getElementById('predictBtn');
+const predictionSummaryText = document.getElementById('predictionSummaryText');
+let probChart = null;
+
+predictBtn.onclick = async () => {
+  // Get all values and send multiple variations to improve matching
+  const country = document.getElementById('country').value.trim() || 'India';
+  const subregion = document.getElementById('subregion').value.trim() || 'South Asia';
+  const year = parseInt(document.getElementById('year').value) || 2020;
+  const month = parseInt(document.getElementById('month').value) || 6;
+  const totalAffected = parseFloat(document.getElementById('total_affected').value || 0);
+  const totalDeaths = parseFloat(document.getElementById('total_deaths').value || 0);
+  const totalInjured = parseFloat(document.getElementById('total_injured').value || 0);
+  const totalHomeless = parseFloat(document.getElementById('total_homeless').value || 0);
+  const damageUsd = parseFloat(document.getElementById('damage_usd').value || 0);
+  
+  // Validate inputs
+  if (!country || !subregion || isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+    predictionSummaryText.textContent = 'Error: Please fill in all required fields (Country, Region, Year, Month).';
+    return;
+  }
+  
+  // Send multiple column name variations to maximize matching chances
+  const payload = {
+    // Country variations
+    "Country": country,
+    "Country Name": country,
+    "ISO": country,
+    "ISO Code": country,
+    "CountryName": country,
+    // Subregion variations
+    "Subregion": subregion,
+    "Region": subregion,
+    "Region Name": subregion,
+    "Subregion Name": subregion,
+    "Geographical Subregion": subregion,
+    // Year variations
+    "Year": year,
+    "Start Year": year,
+    "Disaster Year": year,
+    "StartYear": year,
+    // Month variations
+    "Month": month,
+    "Start Month": month,
+    "Disaster Month": month,
+    "StartMonth": month,
+    // Impact variations
+    "Total Affected": totalAffected,
+    "Total Affected ('000)": totalAffected,
+    "No. Affected": totalAffected,
+    "Affected": totalAffected,
+    "Total Deaths": totalDeaths,
+    "No. Killed": totalDeaths,
+    "Deaths": totalDeaths,
+    "Killed": totalDeaths,
+    "Total Injured": totalInjured,
+    "No. Injured": totalInjured,
+    "Injured": totalInjured,
+    "Total Homeless": totalHomeless,
+    "No. Homeless": totalHomeless,
+    "Homeless": totalHomeless,
+    // Damage variations
+    "Economic Damage (USD)": damageUsd,
+    "Damage USD": damageUsd,
+    "Total Damage": damageUsd,
+    "Total Damage ('000 US$)": damageUsd,
+    "Damage ('000 US$)": damageUsd,
+    "Economic Damage": damageUsd
+  };
+
+  predictionSummaryText.textContent = 'Predicting...';
+
+  try {
+    const r = await fetch('/predict', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+
+    let data;
+    try {
+      data = await r.json();
+    } catch (e) {
+      predictionSummaryText.textContent = 'Error: Please login and make sure the model is trained before predicting.';
+      return;
+    }
+
+    if (!r.ok || data.error) {
+      const msg = data && data.error ? data.error : 'prediction_failed';
+      const details = data && data.details ? ' - ' + data.details : '';
+      predictionSummaryText.textContent = 'Error: ' + msg + details;
+      return;
+    }
+
+    const type = data.predicted_type || 'Unknown';
+    const severity = data.severity_level || 'N/A';
+    const risk = data.risk_score != null ? data.risk_score.toFixed(1) + '%' : 'N/A';
+    const topPreds = data.top_predictions || [];
+    const probs = data.probabilities || [];
+    const labels = data.class_labels || [];
+
+    let topPredsHtml = '';
+    if (topPreds.length > 0) {
+      topPredsHtml = '<div style="margin-top: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;"><strong>Top Predictions:</strong><ul style="margin: 8px 0 0 20px;">';
+      topPreds.forEach(p => {
+        topPredsHtml += `<li>${p.type}: ${p.probability}</li>`;
+      });
+      topPredsHtml += '</ul></div>';
+    }
+
+    // Generate analysis based on probabilities
+    let analysisHtml = '';
+    if (topPreds.length > 0) {
+      const topProb = parseFloat(topPreds[0].probability);
+      const secondProb = topPreds.length > 1 ? parseFloat(topPreds[1].probability) : 0;
+      const thirdProb = topPreds.length > 2 ? parseFloat(topPreds[2].probability) : 0;
+      
+      let confidenceLevel = '';
+      let analysisText = '';
+      
+      if (topProb >= 70) {
+        confidenceLevel = 'High';
+        analysisText = `The model shows <strong>high confidence</strong> (${topProb}%) that <strong>${type}</strong> is the most likely disaster. This prediction is strongly supported by the input data.`;
+      } else if (topProb >= 40) {
+        confidenceLevel = 'Moderate';
+        analysisText = `The model shows <strong>moderate confidence</strong> (${topProb}%) for <strong>${type}</strong>. There's also a ${secondProb}% chance of <strong>${topPreds[1].type}</strong>, indicating multiple possible scenarios.`;
+      } else {
+        confidenceLevel = 'Low';
+        analysisText = `The model shows <strong>low confidence</strong> (${topProb}%) for <strong>${type}</strong>. Multiple disaster types are possible: <strong>${topPreds[1].type}</strong> (${secondProb}%) and <strong>${topPreds[2].type}</strong> (${thirdProb}%). Consider reviewing input parameters.`;
+      }
+      
+      // Severity analysis
+      let severityAnalysis = '';
+      if (severity === 'High') {
+        severityAnalysis = 'The predicted <strong>High severity</strong> indicates significant potential impact. Immediate preparedness measures are recommended.';
+      } else if (severity === 'Medium') {
+        severityAnalysis = 'The predicted <strong>Medium severity</strong> suggests moderate impact. Standard preparedness protocols should be activated.';
+      } else {
+        severityAnalysis = 'The predicted <strong>Low severity</strong> indicates minimal expected impact. Monitor the situation but standard operations can continue.';
+      }
+      
+      // Risk score analysis
+      let riskAnalysis = '';
+      const riskNum = parseFloat(risk);
+      if (riskNum >= 80) {
+        riskAnalysis = `The <strong>${risk}% risk score</strong> indicates a very high probability of occurrence. Urgent action is recommended.`;
+      } else if (riskNum >= 50) {
+        riskAnalysis = `The <strong>${risk}% risk score</strong> indicates a moderate to high probability. Preparedness measures should be considered.`;
+      } else {
+        riskAnalysis = `The <strong>${risk}% risk score</strong> indicates a lower probability, but monitoring is still advised.`;
+      }
+      
+      analysisHtml = `
+        <div style="margin-top: 20px; padding: 16px; background: rgba(255,110,199,0.08); border-radius: 12px; border: 1px solid rgba(255,110,199,0.2);">
+          <h5 style="color: var(--pink); margin-bottom: 12px; font-size: 1.1em;">📊 Prediction Analysis</h5>
+          
+          <div style="margin-bottom: 12px;">
+            <strong style="color: #fff;">Confidence Level:</strong> <span style="color: ${topProb >= 70 ? '#4ade80' : topProb >= 40 ? '#ffd700' : '#ff9090'}">${confidenceLevel}</span><br>
+            <div style="margin-top: 6px; font-size: 0.9em; color: var(--text-muted);">${analysisText}</div>
+          </div>
+          
+          <div style="margin-bottom: 12px;">
+            <strong style="color: #fff;">Severity Assessment:</strong><br>
+            <div style="margin-top: 6px; font-size: 0.9em; color: var(--text-muted);">${severityAnalysis}</div>
+          </div>
+          
+          <div>
+            <strong style="color: #fff;">Risk Evaluation:</strong><br>
+            <div style="margin-top: 6px; font-size: 0.9em; color: var(--text-muted);">${riskAnalysis}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    predictionSummaryText.innerHTML =
+      `<div style="margin-bottom: 12px;">
+        <strong style="font-size: 1.2em; color: var(--pink);">${type}</strong> is the most likely disaster type.<br>
+        Severity Level: <strong>${severity}</strong> | Risk Score: <strong>${risk}</strong>
+      </div>` +
+      topPredsHtml +
+      analysisHtml;
+
+    // Create probability chart
+    const chartLabels = (data.class_labels && data.class_labels.length)
+      ? data.class_labels
+      : (data.probabilities || []).map((_, i) => 'Class ' + i);
+    const chartProbs = data.probabilities || [];
+    const chartPerc = chartProbs.map(p => +(p * 100).toFixed(2));
+
+    const ctx = document.getElementById('probChart');
+    if (ctx) {
+      if (probChart) {
+        probChart.destroy();
+      }
+      probChart = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: chartLabels,
+          datasets: [{
+            label: 'Disaster Probability (%)',
+            data: chartPerc,
+            backgroundColor: 'rgba(255,110,199,0.5)',
+            borderColor: 'rgba(255,110,199,0.9)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: '#ffffff',
+                font: { size: 10 }
+              }
+            },
+            x: {
+              ticks: {
+                color: '#ffffff',
+                font: { size: 9 },
+                maxRotation: 45,
+                minRotation: 45
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#ffffff', font: { size: 12 } }
+            }
+          }
+        }
+      });
+    }
+  } catch (err) {
+    predictionSummaryText.textContent = 'Error: ' + err.message;
+  }
+};
+</script>
+{% endblock %}

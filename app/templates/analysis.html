@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-10">
+  
+  <div class="text-center gsap-animate-in">
+    <h2 class="text-4xl font-bold text-white mb-2">Dataset <span class="text-gradient">Analysis</span></h2>
+    <p class="text-gray-400">Explore data distribution and missing attributes</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Dataset Overview -->
+    <div class="glass-card p-6 gsap-animate-in lg:col-span-1">
+      <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-pink-400">dataset</span> Overview
+      </h3>
+      <div class="bg-white/5 rounded-lg p-4 mb-4 border border-white/10 flex justify-between items-center">
+        <span class="text-gray-400">Total Rows</span>
+        <span class="text-2xl font-bold text-white">{{ summary.rows }}</span>
+      </div>
+      
+      <div class="mb-4">
+        <h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Columns</h4>
+        <div class="max-h-40 overflow-y-auto custom-scrollbar bg-dark-900/50 rounded p-2">
+          <ul class="text-sm text-gray-300 space-y-1">
+          {% for c in summary.columns %}
+            <li>• {{ c }}</li>
+          {% endfor %}
+          </ul>
+        </div>
+      </div>
+      
+      <div>
+        <h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Missing Values</h4>
+        <div class="max-h-40 overflow-y-auto custom-scrollbar bg-dark-900/50 rounded p-2">
+          <ul class="text-sm text-gray-300 space-y-1">
+          {% for k,v in summary.missing.items() %}
+            {% if v > 0 %}
+            <li class="flex justify-between">
+              <span>{{ k }}</span>
+              <span class="text-red-400 font-mono">{{ v }}</span>
+            </li>
+            {% endif %}
+          {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Visualizations -->
+    <div class="glass-card p-6 gsap-animate-in lg:col-span-2">
+      <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-blue-400">monitoring</span> Visualizations
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="vis1" class="bg-dark-900/80 rounded-lg h-72 w-full"></div>
+        <div id="vis2" class="bg-dark-900/80 rounded-lg h-72 w-full"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="glass-card p-6 gsap-animate-in">
+    <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+      <span class="material-symbols-outlined text-purple-400">table_view</span> Data Preview
+    </h3>
+    <div class="overflow-x-auto rounded-lg border border-white/10 bg-dark-900/50">
+      <div class="inline-block min-w-full align-middle text-sm text-gray-300 [&>table]:min-w-full [&_table]:min-w-full [&_th]:bg-white/5 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:px-4 [&_td]:py-2 [&_td]:border-t [&_td]:border-white/5">
+        {{ preview|safe }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Flood Insights -->
+  <div class="glass-card p-6 gsap-animate-in">
+    <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+      <span class="material-symbols-outlined text-green-400">water_drop</span> Flood Insights
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div id="geo" class="bg-dark-900/80 rounded-lg h-96 w-full"></div>
+      <div id="rain" class="bg-dark-900/80 rounded-lg h-96 w-full"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<script>
+// The layout theme for dark mode
+const darkLayout = {
+  paper_bgcolor: 'rgba(0,0,0,0)',
+  plot_bgcolor: 'rgba(0,0,0,0)',
+  font: { color: '#e2e8f0', family: 'Poppins, sans-serif' },
+  margin: { t: 40, b: 40, l: 40, r: 20 }
+};
+
+const plots = {{ plots|tojson }};
+if (plots.disaster_by_year) {
+  const d = plots.disaster_by_year;
+  const data = [{x: d.x, y: d.y, type: 'bar', marker: {color: '#f04ab1'}}];
+  Plotly.newPlot('vis1', data, { ...darkLayout, title: 'Disaster Count by Year' }, {responsive: true});
+}
+if (plots.type_distribution) {
+  const d = plots.type_distribution;
+  const data = [{labels: d.labels, values: d.values, type: 'pie'}];
+  Plotly.newPlot('vis2', data, { ...darkLayout, title: 'Disaster Type Distribution' }, {responsive: true});
+}
+
+const insights = {{ insights|tojson }};
+if (insights.geo && insights.geo.lat && insights.geo.lon) {
+  let colors = undefined;
+  if (insights.rain_hist && insights.rain_summary){
+    const mean = insights.rain_summary.mean;
+    colors = (insights.geo.lat.map((_,i)=> i%5===0 ? mean*1.2 : mean*0.8));
+  }
+  const data = [{
+    type: 'scattergeo', mode: 'markers',
+    lat: insights.geo.lat, lon: insights.geo.lon,
+    marker: {size: 5, color: colors || '#ff6ec7', colorscale: 'Blues', opacity: 0.8}
+  }];
+  Plotly.newPlot('geo', data, { ...darkLayout, title: 'Flood Locations', geo: { bgcolor: 'rgba(0,0,0,0)', showland: true, landcolor: 'rgba(255,255,255,0.05)', projection: {type: 'natural earth'} } }, {responsive: true});
+}
+if (insights.rain_hist) {
+  const h = insights.rain_hist; const bins = [];
+  for (let i=0;i<h.counts.length;i++){ bins.push((h.bins[i]+h.bins[i+1])/2); }
+  Plotly.newPlot('rain', [{x: bins, y: h.counts, type: 'bar', marker: {color: '#60a5fa'}}], { ...darkLayout, title: 'Rainfall Distribution' }, {responsive: true});
+}
+</script>
+{% endblock %}

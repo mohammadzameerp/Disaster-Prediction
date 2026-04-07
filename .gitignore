@@ -1,0 +1,24 @@
+# Environments
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Databases
+*.db
+*.sqlite3
+
+# Uploads and temporary files
+app/uploads/*
+app/static/uploads/*
+!app/uploads/.gitkeep
+!app/static/uploads/.gitkeep
+
+# OS generated files
+.DS_Store
+Thumbs.db
+~$*.xlsx

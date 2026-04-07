@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#0f0f12"/>
+  <circle cx="300" cy="340" r="160" fill="#ff6e2a"/>
+  <path d="M200 420 C240 360 260 380 280 340 C300 300 330 320 360 280 C380 260 390 320 400 360 C410 400 420 420 450 440 L200 440 Z" fill="#ff9c4a"/>
+  <text x="40" y="80" font-size="56" font-family="Poppins" fill="#ff6ec7">Wildfire</text>
+</svg>

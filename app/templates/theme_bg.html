@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-card">
+  <h2 class="heading-pink">Upload Home Background</h2>
+  {% if current %}<p>Current: <code>{{ current }}</code></p>{% endif %}
+  <form method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label>Choose Image</label>
+      <input type="file" name="image" class="form-control" accept="image/*" />
+    </div>
+    <button class="btn btn-pink" type="submit">Upload</button>
+  </form>
+</div>
+{% endblock %}
