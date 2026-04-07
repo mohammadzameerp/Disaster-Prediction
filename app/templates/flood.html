@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-10 mt-10">
+  <div class="text-center gsap-animate-in">
+    <h2 class="text-4xl font-bold text-white mb-2">Flood <span class="text-gradient">Analysis</span> System</h2>
+    <p class="text-gray-400 font-light">Specialized module for predicting flood occurrence, severity, and multidimensional risks.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Input Form -->
+    <div class="glass-card p-8 gsap-animate-in border-t border-blue-500/30">
+      <h3 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
+        <span class="material-symbols-outlined text-blue-400">water_drop</span> Analysis Parameters
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="md:col-span-2">
+          <label class="block text-sm text-gray-400 mb-1">Region / State</label>
+          <input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-pink-500" id="region" placeholder="Kerala" value="Kerala"/>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Rainfall (mm)</label>
+          <input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-pink-500" id="rainfall" type="number" min="0" value="120"/>
+          <small class="text-gray-500 text-xs">Primary flood trigger</small>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Soil Moisture (%)</label>
+          <input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-pink-500" id="soil" type="number" min="0" max="100" value="30"/>
+          <small class="text-gray-500 text-xs">Saturation level (0-100%)</small>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Elevation (m)</label>
+          <input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-pink-500" id="elev" type="number" min="0" value="50"/>
+          <small class="text-gray-500 text-xs">Low elevation → risk</small>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Month</label>
+          <input class="w-full bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-pink-500" id="month" type="number" min="1" max="12" value="7"/>
+          <small class="text-gray-500 text-xs">1-12</small>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm text-gray-400 mb-1">Season</label>
+          <input class="w-full bg-dark-900/50 border border-white/5 rounded-lg px-3 py-2 text-gray-400 cursor-not-allowed" id="season" readonly/>
+          <small class="text-gray-500 text-xs">Auto-generated</small>
+        </div>
+      </div>
+      <button id="floodBtn" class="w-full mt-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg flex justify-center items-center gap-2 transition-all">
+        <span class="material-symbols-outlined">analytics</span> Analyze Flood Risk
+      </button>
+    </div>
+
+    <!-- Info Output -->
+    <div class="glass-card p-8 gsap-animate-in border-t border-pink-500/30 flex flex-col justify-center">
+      <h4 class="text-2xl font-semibold text-white mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-pink-400">insights</span> Overall Prediction
+      </h4>
+      <div id="floodSummary" class="flex-grow flex items-center justify-center border border-white/5 bg-dark-900/40 rounded-lg p-6">
+        <p id="floodSummaryText" class="text-gray-400 text-center">Fill out parameters and click 'Analyze'</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Prediction Outputs -->
+  <div id="floodResults" style="display: none;" class="space-y-8 pb-10">
+    <div class="glass-card p-8 gsap-animate-in">
+      <h3 class="text-2xl font-semibold text-white mb-6">📊 Main Flood Prediction</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl text-center">
+          <div class="text-sm text-blue-300">Occurrence</div>
+          <div id="floodOccurrence" class="text-2xl font-bold text-white mt-1"></div>
+        </div>
+        <div class="bg-pink-500/10 border border-pink-500/20 p-4 rounded-xl text-center">
+          <div class="text-sm text-pink-300">Probability</div>
+          <div id="floodProbability" class="text-2xl font-bold text-white mt-1"></div>
+        </div>
+        <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl text-center">
+          <div class="text-sm text-purple-300">Severity</div>
+          <div id="floodSeverity" class="text-2xl font-bold text-white mt-1"></div>
+        </div>
+        <div class="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-center">
+          <div class="text-sm text-red-300">Risk Score</div>
+          <div id="floodRiskScore" class="text-2xl font-bold text-white mt-1"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Environmental Analysis -->
+    <div class="glass-card p-8 gsap-animate-in">
+      <h3 class="text-2xl font-semibold text-white mb-6">🌍 Environmental Analysis</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-dark-900/50 p-4 rounded-lg border border-white/5">
+          <h5 class="text-blue-400 font-semibold mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-sm">rainy</span> Rainfall Analysis</h5>
+          <div id="rainfallAnalysis" class="text-gray-300 text-sm"></div>
+        </div>
+        <div class="bg-dark-900/50 p-4 rounded-lg border border-white/5">
+          <h5 class="text-yellow-400 font-semibold mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-sm">landscape</span> Soil Moisture Analysis</h5>
+          <div id="soilAnalysis" class="text-gray-300 text-sm"></div>
+        </div>
+        <div class="bg-dark-900/50 p-4 rounded-lg border border-white/5">
+          <h5 class="text-green-400 font-semibold mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-sm">terrain</span> Elevation Impact</h5>
+          <div id="elevationAnalysis" class="text-gray-300 text-sm"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="glass-card p-8 gsap-animate-in">
+      <h3 class="text-2xl font-semibold text-white mb-6">📈 Visual Analytics</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-dark-900/40 p-4 rounded-xl border border-white/5">
+          <h5 class="text-white font-medium mb-3">1. Flood Probability</h5>
+          <canvas id="probChart"></canvas>
+        </div>
+        <div class="bg-dark-900/40 p-4 rounded-xl border border-white/5">
+          <h5 class="text-white font-medium mb-3">2. Factor Contribution</h5>
+          <canvas id="factorChart"></canvas>
+        </div>
+        <div class="bg-dark-900/40 p-4 rounded-xl border border-white/5">
+          <h5 class="text-white font-medium mb-3">3. Rainfall vs Flood Risk</h5>
+          <canvas id="rainfallRiskChart"></canvas>
+        </div>
+        <div class="bg-dark-900/40 p-4 rounded-xl border border-white/5">
+          <h5 class="text-white font-medium mb-3">4. Soil Moisture Distribution</h5>
+          <canvas id="soilChart"></canvas>
+        </div>
+        <div class="bg-dark-900/40 p-4 rounded-xl border border-white/5">
+          <h5 class="text-white font-medium mb-3">5. Elevation Safety Comparison</h5>
+          <canvas id="elevationChart"></canvas>
+        </div>
+        <div class="bg-dark-900/40 p-4 rounded-xl border border-white/5">
+          <h5 class="text-white font-medium mb-3">6. Month-wise Flood Risk</h5>
+          <canvas id="monthRiskChart"></canvas>
+        </div>
+        <div class="bg-dark-900/40 p-4 rounded-xl border border-white/5 md:col-span-2">
+          <h5 class="text-white font-medium mb-3">7. Seasonal Flood Risk</h5>
+          <div class="h-64 flex justify-center"><canvas id="seasonChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="glass-card p-8 gsap-animate-in">
+      <h3 class="text-2xl font-semibold text-white mb-4">📝 Analysis Summary</h3>
+      <div id="summaryText" class="text-gray-300 leading-relaxed whitespace-pre-line p-4 bg-dark-900/40 rounded-lg border border-white/5"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const floodBtn = document.getElementById('floodBtn');
+const monthInput = document.getElementById('month');
+const seasonInput = document.getElementById('season');
+
+// Auto-update season when month changes
+function updateSeason() {
+  const month = parseInt(monthInput.value) || 7;
+  let season = '';
+  if (month >= 3 && month <= 5) season = 'Summer';
+  else if (month >= 6 && month <= 9) season = 'Monsoon';
+  else if (month >= 10 && month <= 11) season = 'Post-Monsoon';
+  else season = 'Winter';
+  seasonInput.value = season;
+}
+monthInput.addEventListener('input', updateSeason);
+updateSeason();
+
+let charts = {};
+
+floodBtn.onclick = async () => {
+  const payload = {
+    "Region": document.getElementById('region').value,
+    "Rainfall": parseFloat(document.getElementById('rainfall').value),
+    "Soil Moisture": parseFloat(document.getElementById('soil').value),
+    "Elevation": parseFloat(document.getElementById('elev').value),
+    "Month": parseInt(document.getElementById('month').value),
+    "Season": document.getElementById('season').value
+  };
+
+  document.getElementById('floodSummaryText').textContent = 'Analyzing flood risk...';
+  document.getElementById('floodResults').style.display = 'none';
+
+  try {
+    const r = await fetch('/flood', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+
+    let data;
+    try {
+      const contentType = r.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await r.json();
+      } else {
+        const text = await r.text();
+        document.getElementById('floodSummaryText').textContent = 'Error: Server returned invalid response. Please make sure you are logged in and have uploaded a dataset.';
+        return;
+      }
+    } catch (e) {
+      document.getElementById('floodSummaryText').textContent = 'Error: Failed to parse response. Please login and upload a dataset first.';
+      return;
+    }
+
+    if (!r.ok || data.error) {
+      const msg = data && data.message ? data.message : (data && data.error ? data.error : 'prediction_failed');
+      const details = data && data.details ? ' - ' + data.details : '';
+      document.getElementById('floodSummaryText').textContent = 'Error: ' + msg + details;
+      return;
+    }
+
+    // Display main outputs
+    document.getElementById('floodOccurrence').textContent = data.flood_occurrence || 'N/A';
+    document.getElementById('floodProbability').textContent = (data.flood_probability || 0).toFixed(1) + '%';
+    document.getElementById('floodSeverity').textContent = data.severity_level || 'N/A';
+    document.getElementById('floodRiskScore').textContent = (data.risk_score || 0) + '/10';
+
+    // Environmental analysis
+    const env = data.environmental_analysis || {};
+    document.getElementById('rainfallAnalysis').innerHTML = `
+      <div style="font-size: 0.9em;">
+        <div>Value: <strong>${env.rainfall?.value || 0} mm</strong></div>
+        <div>Status: <strong>${env.rainfall?.status || 'N/A'}</strong></div>
+        <div>Intensity Index: <strong>${env.rainfall?.intensity_index || 0}%</strong></div>
+        <div>Contribution: <strong>${env.rainfall?.contribution_pct || 0}%</strong></div>
+        <div>Threshold: ${env.rainfall?.crosses_threshold ? '⚠ Exceeded' : '✓ Below'}</div>
+      </div>
+    `;
+    document.getElementById('soilAnalysis').innerHTML = `
+      <div style="font-size: 0.9em;">
+        <div>Value: <strong>${env.soil_moisture?.value || 0}%</strong></div>
+        <div>Status: <strong>${env.soil_moisture?.status || 'N/A'}</strong></div>
+        <div>Saturation Index: <strong>${env.soil_moisture?.saturation_index || 0}%</strong></div>
+        <div>Contribution: <strong>${env.soil_moisture?.contribution_pct || 0}%</strong></div>
+        <div>Runoff Impact: <strong>${env.soil_moisture?.runoff_impact || 'N/A'}</strong></div>
+      </div>
+    `;
+    document.getElementById('elevationAnalysis').innerHTML = `
+      <div style="font-size: 0.9em;">
+        <div>Value: <strong>${env.elevation?.value || 0} m</strong></div>
+        <div>Safe Elevation: <strong>${env.elevation?.safe_elevation || 100} m</strong></div>
+        <div>Vulnerability: <strong>${env.elevation?.vulnerability_pct || 0}%</strong></div>
+        <div>Contribution: <strong>${env.elevation?.contribution_pct || 0}%</strong></div>
+        <div>Safety: ${env.elevation?.is_safe ? '✓ Safe' : '⚠ Vulnerable'}</div>
+      </div>
+    `;
+
+    // Summary
+    document.getElementById('summaryText').textContent = data.summary || 'No summary available.';
+
+    // Update summary card
+    document.getElementById('floodSummaryText').innerHTML = `
+      <div style="margin-bottom: 12px;">
+        <strong style="font-size: 1.2em; color: var(--pink);">${data.flood_occurrence}</strong><br>
+        Probability: <strong>${data.flood_probability.toFixed(1)}%</strong> | 
+        Severity: <strong>${data.severity_level}</strong> | 
+        Risk: <strong>${data.risk_score}/10</strong>
+      </div>
+    `;
+
+    // Create all charts
+    const chartData = data.chart_data || {};
+
+    // 1. Flood Probability Chart
+    if (charts.probChart) charts.probChart.destroy();
+    const probCtx = document.getElementById('probChart').getContext('2d');
+    charts.probChart = new Chart(probCtx, {
+      type: 'bar',
+      data: {
+        labels: ['No Flood', 'Flood'],
+        datasets: [{
+          label: 'Probability (%)',
+          data: [100 - data.flood_probability, data.flood_probability],
+          backgroundColor: ['rgba(100,100,100,0.5)', 'rgba(255,110,199,0.5)'],
+          borderColor: ['rgba(100,100,100,0.9)', 'rgba(255,110,199,0.9)']
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } },
+        plugins: { legend: { labels: { color: '#fff' } } }
+      }
+    });
+
+    // 2. Factor Contribution Chart
+    if (charts.factorChart) charts.factorChart.destroy();
+    const factorCtx = document.getElementById('factorChart').getContext('2d');
+    const factors = chartData.factor_contributions || {};
+    charts.factorChart = new Chart(factorCtx, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(factors),
+        datasets: [{
+          label: 'Contribution (%)',
+          data: Object.values(factors),
+          backgroundColor: 'rgba(255,110,199,0.5)',
+          borderColor: 'rgba(255,110,199,0.9)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } },
+        plugins: { legend: { labels: { color: '#fff' } } }
+      }
+    });
+
+    // 3. Rainfall vs Risk Chart
+    if (charts.rainfallRiskChart) charts.rainfallRiskChart.destroy();
+    const rainRiskCtx = document.getElementById('rainfallRiskChart').getContext('2d');
+    const rainRisk = chartData.rainfall_vs_risk || [];
+    charts.rainfallRiskChart = new Chart(rainRiskCtx, {
+      type: 'line',
+      data: {
+        labels: rainRisk.map(d => d.rainfall + 'mm'),
+        datasets: [{
+          label: 'Flood Risk (%)',
+          data: rainRisk.map(d => d.risk),
+          borderColor: 'rgba(255,110,199,0.9)',
+          backgroundColor: 'rgba(255,110,199,0.2)',
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } },
+        plugins: { legend: { labels: { color: '#fff' } } }
+      }
+    });
+
+    // 4. Soil Moisture Pie Chart
+    if (charts.soilChart) charts.soilChart.destroy();
+    const soilCtx = document.getElementById('soilChart').getContext('2d');
+    const soilDist = chartData.soil_moisture_distribution || {};
+    charts.soilChart = new Chart(soilCtx, {
+      type: 'pie',
+      data: {
+        labels: Object.keys(soilDist),
+        datasets: [{
+          data: Object.values(soilDist),
+          backgroundColor: ['rgba(255,200,0,0.7)', 'rgba(255,150,0,0.7)', 'rgba(255,50,0,0.7)']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#fff' } } }
+      }
+    });
+
+    // 5. Elevation Safety Chart
+    if (charts.elevationChart) charts.elevationChart.destroy();
+    const elevCtx = document.getElementById('elevationChart').getContext('2d');
+    const elev = env.elevation || {};
+    charts.elevationChart = new Chart(elevCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Current', 'Safe Level', 'Min Flood-Prone'],
+        datasets: [{
+          label: 'Elevation (m)',
+          data: [elev.value || 0, elev.safe_elevation || 100, 50],
+          backgroundColor: ['rgba(255,110,199,0.5)', 'rgba(100,255,100,0.5)', 'rgba(255,100,100,0.5)']
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } },
+        plugins: { legend: { labels: { color: '#fff' } } }
+      }
+    });
+
+    // 6. Month-wise Risk Chart
+    if (charts.monthRiskChart) charts.monthRiskChart.destroy();
+    const monthRiskCtx = document.getElementById('monthRiskChart').getContext('2d');
+    const monthRisks = chartData.month_wise_risk || {};
+    charts.monthRiskChart = new Chart(monthRiskCtx, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(monthRisks).map(m => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]),
+        datasets: [{
+          label: 'Risk (%)',
+          data: Object.values(monthRisks),
+          backgroundColor: 'rgba(255,110,199,0.5)',
+          borderColor: 'rgba(255,110,199,0.9)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } },
+        plugins: { legend: { labels: { color: '#fff' } } }
+      }
+    });
+
+    // 7. Seasonal Risk Pie Chart
+    if (charts.seasonChart) charts.seasonChart.destroy();
+    const seasonCtx = document.getElementById('seasonChart').getContext('2d');
+    const seasonRisks = chartData.seasonal_risk || {};
+    charts.seasonChart = new Chart(seasonCtx, {
+      type: 'pie',
+      data: {
+        labels: Object.keys(seasonRisks),
+        datasets: [{
+          data: Object.values(seasonRisks),
+          backgroundColor: ['rgba(0,150,255,0.7)', 'rgba(255,150,0,0.7)', 'rgba(255,200,0,0.7)', 'rgba(200,200,200,0.7)']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#fff' } } }
+      }
+    });
+
+    document.getElementById('floodResults').style.display = 'block';
+  } catch (err) {
+    document.getElementById('floodSummaryText').textContent = 'Error: ' + err.message;
+  }
+};
+</script>
+{% endblock %}

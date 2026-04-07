@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="min-h-[80vh] flex items-center justify-center relative overflow-hidden" 
+         {% if bg %}style="background-image: url('{{ bg }}'); background-size: cover; background-position: center;"{% endif %}>
+  
+  <div class="absolute inset-0 bg-dark-900/60 backdrop-blur-sm z-0"></div>
+
+  <div class="glass-card relative z-10 p-12 max-w-4xl w-full text-center gsap-animate-in border-t border-b border-pink-500/20">
+    <div class="mb-4 inline-flex items-center justify-center p-3 bg-pink-500/20 rounded-full shadow-inner ring-1 ring-pink-500/50 text-pink-400">
+      <span class="material-symbols-outlined text-5xl">public</span>
+    </div>
+    
+    <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 text-white drop-shadow-lg">
+      Welcome to <span class="text-gradient">DisasterAI</span>
+    </h1>
+    
+    <p class="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+      Harnessing advanced Neural-XGBoost machine learning to predict, analyze, and mitigate the impact of natural disasters globally.
+    </p>
+    
+    <div class="flex flex-wrap items-center justify-center gap-4">
+      <a href="/predict" class="group relative px-8 py-4 bg-pink-500 hover:bg-pink-400 text-white font-semibold rounded-lg shadow-[0_0_20px_rgba(255,110,199,0.4)] transition-all duration-300 overflow-hidden">
+        <span class="relative z-10 flex items-center gap-2">
+          <span class="material-symbols-outlined">analytics</span> Start Predicting
+        </span>
+      </a>
+      
+      <a href="/upload" class="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold rounded-lg backdrop-blur-md transition-all duration-300 flex items-center gap-2">
+        <span class="material-symbols-outlined">cloud_upload</span> Upload Dataset
+      </a>
+      
+      <a href="/algorithms" class="px-8 py-4 bg-transparent hover:bg-blue-500/20 border border-blue-500/50 text-blue-300 font-semibold rounded-lg transition-all duration-300 flex items-center gap-2">
+        <span class="material-symbols-outlined">science</span> Algorithms
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

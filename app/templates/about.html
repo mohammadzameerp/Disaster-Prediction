@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8">
+  <section class="text-center py-10 gsap-animate-in">
+    <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-md">
+      About <span class="text-gradient">This Project</span>
+    </h1>
+    <p class="text-xl text-gray-400 font-light">Neural‑XGBoost Disaster Prediction using AI & Machine Learning.</p>
+  </section>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Card 1 -->
+    <div class="glass-card p-8 gsap-animate-in border-l-4 border-l-pink-500">
+      <div class="flex items-center gap-3 mb-4 text-pink-400">
+        <span class="material-symbols-outlined text-3xl">public</span>
+        <h3 class="text-2xl font-semibold text-white">The Mission</h3>
+      </div>
+      <p class="text-gray-300 leading-relaxed">
+        This system uses advanced machine‑learning models to predict different types of natural disasters and provide early warnings. 
+        It analyzes past disaster records and uncovers patterns that help governments, planners, and communities prepare proactively rather than reactively.
+      </p>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="glass-card p-8 gsap-animate-in border-l-4 border-l-blue-500">
+      <div class="flex items-center gap-3 mb-4 text-blue-400">
+        <span class="material-symbols-outlined text-3xl">smart_toy</span>
+        <h3 class="text-2xl font-semibold text-white">What It Does</h3>
+      </div>
+      <ul class="space-y-3 text-gray-300">
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-blue-400 text-sm mt-1">check_circle</span> Predicts multiple disasters like floods, cyclones, droughts, and landslides.</li>
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-blue-400 text-sm mt-1">check_circle</span> Provides a dedicated flood analysis module for deeper understanding.</li>
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-blue-400 text-sm mt-1">check_circle</span> Lets users upload their own datasets to generate insights.</li>
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-blue-400 text-sm mt-1">check_circle</span> Visualizes disaster trends, graphs, and model accuracies transparently.</li>
+      </ul>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="glass-card p-8 gsap-animate-in border-l-4 border-l-purple-500">
+      <div class="flex items-center gap-3 mb-4 text-purple-400">
+        <span class="material-symbols-outlined text-3xl">memory</span>
+        <h3 class="text-2xl font-semibold text-white">Technology Stack</h3>
+      </div>
+      <ul class="space-y-3 text-gray-300">
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-purple-400 text-sm mt-1">terminal</span> <strong>Neural Networks</strong> for deep feature extraction.</li>
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-purple-400 text-sm mt-1">terminal</span> <strong>XGBoost</strong> as the final prediction ensemble model.</li>
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-purple-400 text-sm mt-1">terminal</span> <strong>EM‑DAT</strong> disaster dataset for training logic.</li>
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-purple-400 text-sm mt-1">terminal</span> Tailwind CSS, Glassmorphism, and Flask backend.</li>
+      </ul>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="glass-card p-8 gsap-animate-in border-l-4 border-l-green-500">
+      <div class="flex items-center gap-3 mb-4 text-green-400">
+        <span class="material-symbols-outlined text-3xl">track_changes</span>
+        <h3 class="text-2xl font-semibold text-white">Why This Matters?</h3>
+      </div>
+      <ul class="space-y-3 text-gray-300">
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-green-400 text-sm mt-1">favorite</span> Help <strong>save lives</strong> with earlier actionable warnings.</li>
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-green-400 text-sm mt-1">trending_down</span> Reduce economic and infrastructure damage.</li>
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-green-400 text-sm mt-1">health_and_safety</span> Improve preparedness and resource allocation planning.</li>
+        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-green-400 text-sm mt-1">group</span> Assist government agencies and rescue teams with data.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

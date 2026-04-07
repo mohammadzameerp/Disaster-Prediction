@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-card text-center">
+  <h3 class="heading-pink">Logged out successfully. Redirecting...</h3>
+  <script>
+    setTimeout(()=>{ window.location.href='/login'; }, 1500);
+  </script>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-xl mx-auto mt-16 pb-20">
+  <div class="glass-card p-10 text-center gsap-animate-in">
+    <div class="mb-6 inline-flex items-center justify-center p-4 bg-pink-500/20 rounded-full text-pink-400 border border-pink-500/30">
+      <span class="material-symbols-outlined text-5xl">cloud_upload</span>
+    </div>
+    <h2 class="text-3xl font-bold text-white mb-2">Upload Dataset</h2>
+    <p class="text-gray-400 mb-8 font-light">Supply an EM-DAT or custom CSV/Excel format dataset to train models or view analysis.</p>
+    
+    {% if login_success %}
+    <div class="mb-6 p-4 rounded-lg bg-green-500/20 border border-green-500/50 text-green-300 flex items-center justify-center gap-2 text-sm font-medium">
+      <span class="material-symbols-outlined text-lg">check_circle</span> Login successful!
+    </div>
+    {% endif %}
+    
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+      <div class="relative group cursor-pointer border-2 border-dashed border-gray-500 hover:border-pink-500 rounded-xl p-8 transition-colors">
+        <input type="file" name="file" accept=".csv,.xlsx" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" required />
+        <div class="space-y-2 flex flex-col items-center">
+          <span class="material-symbols-outlined text-4xl text-gray-500 group-hover:text-pink-400">upload_file</span>
+          <p class="text-gray-300 font-medium">Click to browse or drag and drop</p>
+          <p class="text-gray-500 text-sm">Supported formats: .CSV, .XLSX</p>
+        </div>
+      </div>
+      <button type="submit" class="w-full py-3 bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded-lg shadow-lg flex justify-center items-center gap-2 transition-all duration-300">
+        <span class="material-symbols-outlined">auto_awesome</span> Upload & Analyze
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
