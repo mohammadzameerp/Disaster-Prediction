@@ -52,8 +52,23 @@
         <span class="material-symbols-outlined text-blue-400">monitoring</span> Visualizations
       </h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div id="vis1" class="bg-dark-900/80 rounded-lg h-72 w-full"></div>
-        <div id="vis2" class="bg-dark-900/80 rounded-lg h-72 w-full"></div>
+        {% if plots.disaster_by_year %}
+          <div id="vis1" class="bg-dark-900/80 rounded-lg h-72 w-full relative"></div>
+        {% else %}
+          <div class="bg-dark-900/80 rounded-lg h-72 w-full flex flex-col items-center justify-center text-gray-500 border border-white/5 border-dashed">
+             <span class="material-symbols-outlined text-3xl mb-2">calendar_today</span>
+             <p class="text-sm">Timeline data not detected</p>
+          </div>
+        {% endif %}
+        
+        {% if plots.type_distribution %}
+          <div id="vis2" class="bg-dark-900/80 rounded-lg h-72 w-full relative"></div>
+        {% else %}
+          <div class="bg-dark-900/80 rounded-lg h-72 w-full flex flex-col items-center justify-center text-gray-500 border border-white/5 border-dashed">
+             <span class="material-symbols-outlined text-3xl mb-2">pie_chart</span>
+             <p class="text-sm">Categorical data not detected</p>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -70,16 +85,33 @@
     </div>
   </div>
 
+  {% if insights and (insights.geo or insights.rain_hist) %}
   <!-- Flood Insights -->
   <div class="glass-card p-6 gsap-animate-in">
     <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-      <span class="material-symbols-outlined text-green-400">water_drop</span> Flood Insights
+      <span class="material-symbols-outlined text-green-400">water_drop</span> Geospatial Insights
     </h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {% if insights.geo %}
       <div id="geo" class="bg-dark-900/80 rounded-lg h-96 w-full"></div>
+      {% else %}
+      <div class="bg-dark-900/80 rounded-lg h-96 w-full flex flex-col items-center justify-center text-gray-500 border border-white/5 border-dashed">
+         <span class="material-symbols-outlined text-3xl mb-2">map</span>
+         <p class="text-sm">Coordinate data not detected</p>
+      </div>
+      {% endif %}
+      
+      {% if insights.rain_hist %}
       <div id="rain" class="bg-dark-900/80 rounded-lg h-96 w-full"></div>
+      {% else %}
+      <div class="bg-dark-900/80 rounded-lg h-96 w-full flex flex-col items-center justify-center text-gray-500 border border-white/5 border-dashed">
+         <span class="material-symbols-outlined text-3xl mb-2">bar_chart</span>
+         <p class="text-sm">Rainfall data not detected</p>
+      </div>
+      {% endif %}
     </div>
   </div>
+  {% endif %}
 
 </div>
 

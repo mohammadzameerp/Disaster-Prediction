@@ -30,8 +30,8 @@ def summarize_dataset(df):
 def basic_plots(df):
     plots = {}
     ycol = None
-    for c in ["Year", "year"]:
-        if c in df.columns:
+    for c in df.columns:
+        if "year" in c.lower() or "date" in c.lower():
             ycol = c
             break
     tcol = find_target_column(df)
